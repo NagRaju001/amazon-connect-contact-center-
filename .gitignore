@@ -1,0 +1,12 @@
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Node modules
+node_modules/
+*.zip
+
+# AWS credentials
+.env
+credentials
