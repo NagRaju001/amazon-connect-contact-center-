@@ -5,6 +5,7 @@ terraform {
     region = "us-east-1"
   }
 }
+
 provider "aws" {
   region = "us-east-1"
 }
@@ -18,6 +19,10 @@ resource "aws_dynamodb_table" "orders" {
   attribute {
     name = "orderId"
     type = "S"
+  }
+
+  lifecycle {
+    ignore_changes = all
   }
 
   tags = {
@@ -42,15 +47,15 @@ resource "aws_dynamodb_table" "customers" {
     type = "S"
   }
 
+  attribute {
+    name = "phoneNumber"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "EmailIndex"
     hash_key        = "email"
     projection_type = "ALL"
-  }
-
-  attribute {
-    name = "phoneNumber"
-    type = "S"
   }
 
   global_secondary_index {
@@ -60,7 +65,7 @@ resource "aws_dynamodb_table" "customers" {
   }
 
   lifecycle {
-    ignore_changes = [read_capacity, write_capacity]
+    ignore_changes = all
   }
 
   tags = {
@@ -91,6 +96,10 @@ resource "aws_dynamodb_table" "returns_table" {
     projection_type = "ALL"
   }
 
+  lifecycle {
+    ignore_changes = all
+  }
+
   tags = {
     Environment = "dev"
     Project     = "contact-center"
@@ -113,6 +122,10 @@ resource "aws_iam_role" "lambda_role" {
       }
     ]
   })
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_basic" {
@@ -125,43 +138,49 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
 }
 
-# api-services Lambda
+# api-services Lambda - reads zip from S3
 resource "aws_lambda_function" "api_service" {
   function_name = "api-orders-service"
   role          = aws_iam_role.lambda_role.arn
   handler       = "src/handler.handler"
   runtime       = "nodejs20.x"
+  timeout       = 10
 
-  filename         = "../../services/lambdas/api-services/function.zip"
-  source_code_hash = filebase64sha256("../../services/lambdas/api-services/function.zip")
-
-  timeout = 10
+  s3_bucket = "nagaraju-terraform-state"
+  s3_key    = "lambda-zips/api-services/function.zip"
 
   environment {
     variables = {
-      ORDERS_TABLE    = aws_dynamodb_table.orders.name
-      CUSTOMERS_TABLE = aws_dynamodb_table.customers.name
-      RETURNS_TABLE   = aws_dynamodb_table.returns_table.name
+      ORDERS_TABLE    = "Orders"
+      CUSTOMERS_TABLE = "Customers"
+      RETURNS_TABLE   = "Returns"
     }
+  }
+
+  lifecycle {
+    ignore_changes = [source_code_hash]
   }
 }
 
-# lex-hook Lambda
+# lex-hook Lambda - reads zip from S3
 resource "aws_lambda_function" "lex_hook" {
   function_name = "lex-hook"
   role          = aws_iam_role.lambda_role.arn
   handler       = "src/handler.handler"
   runtime       = "nodejs20.x"
+  timeout       = 15
 
-  filename         = "../../services/lambdas/lex-hook/function.zip"
-  source_code_hash = filebase64sha256("../../services/lambdas/lex-hook/function.zip")
-
-  timeout = 15
+  s3_bucket = "nagaraju-terraform-state"
+  s3_key    = "lambda-zips/lex-hook/function.zip"
 
   environment {
     variables = {
       API_BASE_URL = "https://i3kzrvrdq0.execute-api.us-east-1.amazonaws.com"
     }
+  }
+
+  lifecycle {
+    ignore_changes = [source_code_hash]
   }
 }
 
@@ -169,6 +188,10 @@ resource "aws_lambda_function" "lex_hook" {
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "orders-http-api"
   protocol_type = "HTTP"
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration" {
@@ -177,43 +200,70 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   integration_uri        = aws_lambda_function.api_service.invoke_arn
   integration_method     = "POST"
   payload_format_version = "2.0"
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
-# API Gateway routes
 resource "aws_apigatewayv2_route" "get_order" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "GET /orders/{orderId}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_apigatewayv2_route" "get_customer_by_phone" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "GET /customers/phone/{phoneNumber}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_apigatewayv2_route" "post_auth" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "POST /auth"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_apigatewayv2_route" "post_returns" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "POST /returns"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_apigatewayv2_route" "get_returns" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "GET /returns/{orderId}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.http_api.id
   name        = "$default"
   auto_deploy = true
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 resource "aws_lambda_permission" "api_gw" {
@@ -222,6 +272,10 @@ resource "aws_lambda_permission" "api_gw" {
   function_name = aws_lambda_function.api_service.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 output "api_url" {

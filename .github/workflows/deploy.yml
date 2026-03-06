@@ -16,48 +16,53 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
 
-      - name: Install API service dependencies
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Install and zip api-services
         run: |
           cd services/lambdas/api-services
           npm install
+          zip -r function.zip src/ node_modules/ package.json
 
-      - name: Install Lex hook dependencies
+      - name: Install and zip lex-hook
         run: |
           cd services/lambdas/lex-hook
           npm install
-
-      - name: Zip API service Lambda
-        run: |
-          cd services/lambdas/api-services
           zip -r function.zip src/ node_modules/ package.json
 
-      - name: Zip Lex hook Lambda
+      - name: Upload Lambda zips to S3
         run: |
-          cd services/lambdas/lex-hook
-          zip -r function.zip src/ node_modules/ package.json
+          aws s3 cp services/lambdas/api-services/function.zip s3://nagaraju-terraform-state/lambda-zips/api-services/function.zip
+          aws s3 cp services/lambdas/lex-hook/function.zip s3://nagaraju-terraform-state/lambda-zips/lex-hook/function.zip
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-        run: |
-          terraform init \
-            -backend-config="bucket=nagaraju-terraform-state" \
-            -backend-config="key=contact-center/terraform.tfstate" \
-            -backend-config="region=us-east-1" \
-            -reconfigure
+        run: terraform init -reconfigure
         working-directory: infra/terraform
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
+
+      - name: Import existing resources
+        working-directory: infra/terraform
+        run: |
+          terraform import aws_dynamodb_table.orders Orders || true
+          terraform import aws_dynamodb_table.customers Customers || true
+          terraform import aws_dynamodb_table.returns_table Returns || true
+          terraform import aws_iam_role.lambda_role lambda-dynamodb-role || true
+          terraform import aws_iam_role_policy_attachment.lambda_basic lambda-dynamodb-role/arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole || true
+          terraform import aws_iam_role_policy_attachment.lambda_dynamodb lambda-dynamodb-role/arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess || true
+          terraform import aws_lambda_function.api_service api-orders-service || true
+          terraform import aws_lambda_function.lex_hook lex-hook || true
+          terraform import aws_apigatewayv2_api.http_api i3kzrvrdq0 || true
+          terraform import aws_apigatewayv2_stage.default i3kzrvrdq0/$default || true
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: infra/terraform
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
