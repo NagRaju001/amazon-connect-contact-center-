@@ -1,0 +1,58 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install API service dependencies
+        run: |
+          cd services/lambdas/api-services
+          npm install
+
+      - name: Install Lex hook dependencies
+        run: |
+          cd services/lambdas/lex-hook
+          npm install
+
+      - name: Zip API service Lambda
+        run: |
+          cd services/lambdas/api-services
+          zip -r function.zip src/ node_modules/ package.json
+
+      - name: Zip Lex hook Lambda
+        run: |
+          cd services/lambdas/lex-hook
+          zip -r function.zip src/ node_modules/ package.json
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: infra/terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: infra/terraform
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
