@@ -32,7 +32,8 @@ resource "aws_dynamodb_table" "orders" {
 }
 
 # Customers table
-resource "aws_dynamodb_table" "customers" {
+
+   resource "aws_dynamodb_table" "customers" {
   name         = "Customers"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "customerId"
@@ -40,28 +41,6 @@ resource "aws_dynamodb_table" "customers" {
   attribute {
     name = "customerId"
     type = "S"
-  }
-
-  attribute {
-    name = "email"
-    type = "S"
-  }
-
-  attribute {
-    name = "phoneNumber"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name            = "EmailIndex"
-    hash_key        = "email"
-    projection_type = "ALL"
-  }
-
-  global_secondary_index {
-    name            = "PhoneIndex"
-    hash_key        = "phoneNumber"
-    projection_type = "ALL"
   }
 
   lifecycle {
@@ -73,8 +52,7 @@ resource "aws_dynamodb_table" "customers" {
     Environment = "dev"
   }
 }
-
-# Returns table
+#returns table
 resource "aws_dynamodb_table" "returns_table" {
   name         = "Returns"
   billing_mode = "PAY_PER_REQUEST"
@@ -83,17 +61,6 @@ resource "aws_dynamodb_table" "returns_table" {
   attribute {
     name = "returnId"
     type = "S"
-  }
-
-  attribute {
-    name = "orderId"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name            = "OrderIndex"
-    hash_key        = "orderId"
-    projection_type = "ALL"
   }
 
   lifecycle {

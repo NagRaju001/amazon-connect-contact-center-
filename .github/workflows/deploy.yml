@@ -61,8 +61,7 @@ jobs:
           terraform import aws_lambda_function.api_service api-orders-service || true
           terraform import aws_lambda_function.lex_hook lex-hook || true
           terraform import aws_apigatewayv2_api.http_api i3kzrvrdq0 || true
-          terraform import aws_apigatewayv2_stage.default i3kzrvrdq0/$default || true
-
+          terraform import aws_apigatewayv2_stage.default 'i3kzrvrdq0/$default' || true
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: infra/terraform
