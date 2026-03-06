@@ -10,3 +10,4 @@ node_modules/
 # AWS credentials
 .env
 credentials
+current-state.json
