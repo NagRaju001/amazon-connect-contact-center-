@@ -9,93 +9,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# Orders table
-resource "aws_dynamodb_table" "orders" {
-  name         = "Orders"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "orderId"
 
-  attribute {
-    name = "orderId"
-    type = "S"
-  }
-
-  tags = {
-    Project     = "AmazonConnectContactCenter"
-    Environment = "dev"
-  }
-}
-
-# Customers table
-resource "aws_dynamodb_table" "customers" {
-  name         = "Customers"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "customerId"
-
-  attribute {
-    name = "customerId"
-    type = "S"
-  }
-
-  attribute {
-    name = "email"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name            = "EmailIndex"
-    hash_key        = "email"
-    projection_type = "ALL"
-  }
-
-  attribute {
-    name = "phoneNumber"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name            = "PhoneIndex"
-    hash_key        = "phoneNumber"
-    projection_type = "ALL"
-  }
-
-  lifecycle {
-    ignore_changes = [read_capacity, write_capacity]
-  }
-
-  tags = {
-    Project     = "AmazonConnectContactCenter"
-    Environment = "dev"
-  }
-}
-
-# Returns table
-resource "aws_dynamodb_table" "returns_table" {
-  name         = "Returns"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "returnId"
-
-  attribute {
-    name = "returnId"
-    type = "S"
-  }
-
-  attribute {
-    name = "orderId"
-    type = "S"
-  }
-
-  global_secondary_index {
-    name            = "OrderIndex"
-    hash_key        = "orderId"
-    projection_type = "ALL"
-  }
-
-  tags = {
-    Environment = "dev"
-    Project     = "contact-center"
-  }
-}
 
 # IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
@@ -139,9 +53,9 @@ resource "aws_lambda_function" "api_service" {
 
   environment {
     variables = {
-      ORDERS_TABLE    = aws_dynamodb_table.orders.name
-      CUSTOMERS_TABLE = aws_dynamodb_table.customers.name
-      RETURNS_TABLE   = aws_dynamodb_table.returns_table.name
+      ORDERS_TABLE    = "Orders"
+      CUSTOMERS_TABLE = "Customers"
+      RETURNS_TABLE   = "Returns"
     }
   }
 }
