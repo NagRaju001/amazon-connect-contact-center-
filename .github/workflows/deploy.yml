@@ -37,31 +37,14 @@ jobs:
           npm install
           zip -r function.zip src/ node_modules/ package.json
 
-      - name: Upload Lambda zips to S3
+      - name: Deploy api-services Lambda
         run: |
-          aws s3 cp services/lambdas/api-services/function.zip s3://nagaraju-terraform-state/lambda-zips/api-services/function.zip
-          aws s3 cp services/lambdas/lex-hook/function.zip s3://nagaraju-terraform-state/lambda-zips/lex-hook/function.zip
+          aws lambda update-function-code \
+            --function-name api-orders-service \
+            --zip-file fileb://services/lambdas/api-services/function.zip
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-
-      - name: Terraform Init
-        run: terraform init -reconfigure
-        working-directory: infra/terraform
-
-      - name: Import existing resources
-        working-directory: infra/terraform
+      - name: Deploy lex-hook Lambda
         run: |
-          terraform import aws_dynamodb_table.orders Orders || true
-          terraform import aws_dynamodb_table.customers Customers || true
-          terraform import aws_dynamodb_table.returns_table Returns || true
-          terraform import aws_iam_role.lambda_role lambda-dynamodb-role || true
-          terraform import aws_iam_role_policy_attachment.lambda_basic lambda-dynamodb-role/arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole || true
-          terraform import aws_iam_role_policy_attachment.lambda_dynamodb lambda-dynamodb-role/arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess || true
-          terraform import aws_lambda_function.api_service api-orders-service || true
-          terraform import aws_lambda_function.lex_hook lex-hook || true
-          terraform import aws_apigatewayv2_api.http_api i3kzrvrdq0 || true
-          terraform import aws_apigatewayv2_stage.default 'i3kzrvrdq0/$default' || true
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-        working-directory: infra/terraform
+          aws lambda update-function-code \
+            --function-name lex-hook \
+            --zip-file fileb://services/lambdas/lex-hook/function.zip
