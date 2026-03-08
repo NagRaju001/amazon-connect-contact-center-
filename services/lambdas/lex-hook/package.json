@@ -1,8 +1,8 @@
 {
   "name": "lex-hook",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Lex fulfillment Lambda for Amazon Connect contact center",
+  "main": "src/handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

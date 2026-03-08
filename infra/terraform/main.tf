@@ -8,9 +8,10 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
-
-
-
+variable "api_base_url" {
+  description = "API Gateway base URL"
+  type        = string
+}
 # IAM role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "lambda-dynamodb-role"
@@ -73,10 +74,10 @@ resource "aws_lambda_function" "lex_hook" {
   timeout = 15
 
   environment {
-    variables = {
-      API_BASE_URL = "https://i3kzrvrdq0.execute-api.us-east-1.amazonaws.com"
-    }
+  variables = {
+    API_BASE_URL = var.api_base_url
   }
+}
 }
 
 # API Gateway

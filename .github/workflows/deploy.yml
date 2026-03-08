@@ -1,50 +1,54 @@
 name: Deploy to AWS
-
 on:
   push:
     branches:
       - main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-
       - name: Install and zip api-services
         run: |
           cd services/lambdas/api-services
           npm install
           zip -r function.zip src/ node_modules/ package.json
-
       - name: Install and zip lex-hook
         run: |
           cd services/lambdas/lex-hook
           npm install
           zip -r function.zip src/ node_modules/ package.json
-
       - name: Deploy api-services Lambda
         run: |
           aws lambda update-function-code \
             --function-name api-orders-service \
             --zip-file fileb://services/lambdas/api-services/function.zip
-
+      - name: Wait for api-services to be ready
+        run: |
+          aws lambda wait function-updated \
+            --function-name api-orders-service
       - name: Deploy lex-hook Lambda
         run: |
           aws lambda update-function-code \
             --function-name lex-hook \
             --zip-file fileb://services/lambdas/lex-hook/function.zip
+      - name: Wait for lex-hook to be ready
+        run: |
+          aws lambda wait function-updated \
+            --function-name lex-hook
+      - name: Set lex-hook environment variables
+        run: |
+          aws lambda update-function-configuration \
+            --function-name lex-hook \
+            --environment "Variables={API_BASE_URL=${{ secrets.API_BASE_URL }}}"
