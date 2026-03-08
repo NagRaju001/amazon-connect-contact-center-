@@ -58,7 +58,7 @@ if (intentName === "FallbackIntent") {
     return await handleCheckOrderStatus(event, slots, customerName);
   }
   if (intentName === "ReturnOrder") {
-    return await handleReturnOrder(event, slots, customerName);
+    return await handleReturnOrder(event, slots, customerName, customer);
   }
   
   if (intentName === "SpeakToAgent") {
@@ -178,7 +178,7 @@ if (!isValidOrderNumber) {
   }
 }
 
-async function handleReturnOrder(event, slots, customerName) {
+async function handleReturnOrder(event, slots, customerName, customer) {
   const rawOrderNumber = slots?.orderNumber?.value?.interpretedValue;
 
   let orderNumber;
@@ -217,12 +217,28 @@ if (!isValidOrderNumber) {
       "What is the reason for your return? " +
       "For example damaged, wrong item, or changed mind.");
   }
+  try {
+    const customerId = customer?.customerId || "UNKNOWN";
+    await axios.post(`${API_BASE_URL}/returns`, {
+      orderId: orderNumber,
+      reason: returnReason,
+      customerId: customerId
+    });
+    console.log("Return saved successfully for order:", orderNumber);
+  } catch (error) {
+    console.log("Failed to save return:", error.message);
+    return buildClose(event,
+      "I'm sorry, I was unable to submit your return request right now. " +
+      "Please try again later or speak to an agent."
+    );
+  }
+
   return buildElicitIntent(
-  `Your return request for order ${orderNumber} ` +
-  `with reason ${returnReason} has been submitted. ` +
-  `Our team will contact you within 24 hours with return instructions. ` +
-  `Is there anything else I can help you with?`
-);
+    `Your return request for order ${orderNumber} ` +
+    `with reason ${returnReason} has been submitted. ` +
+    `Our team will contact you within 24 hours with return instructions. ` +
+    `Is there anything else I can help you with?`
+  );
 }
 
 async function handleSpeakToAgent(event) {
