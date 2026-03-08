@@ -1,8 +1,8 @@
 {
   "name": "api-services",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Order and customer API services for Amazon Connect contact center",
+  "main": "src/handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
