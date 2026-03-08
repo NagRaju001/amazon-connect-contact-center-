@@ -1,0 +1,16 @@
+{
+  "name": "connect-greeting",
+  "version": "1.0.0",
+  "description": "Looks up customer by phone number (ANI) and returns first name for personalized greeting in Amazon Connect",
+  "main": "src/handler.js",
+  "scripts": {
+    "test": "node tests/handler.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.996.0",
+    "@aws-sdk/lib-dynamodb": "^3.996.0"
+  }
+}
