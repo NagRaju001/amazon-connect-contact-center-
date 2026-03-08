@@ -34,6 +34,10 @@ jobs:
           aws lambda update-function-code \
             --function-name api-orders-service \
             --zip-file fileb://services/lambdas/api-services/function.zip
+      - name: Wait for api-services to be ready
+        run: |
+          aws lambda wait function-updated \
+            --function-name api-orders-service
       - name: Deploy lex-hook Lambda
         run: |
           aws lambda update-function-code \
@@ -43,12 +47,6 @@ jobs:
         run: |
           aws lambda wait function-updated \
             --function-name lex-hook
-
-      - name: Set lex-hook environment variables
-        run: |
-          aws lambda update-function-configuration \
-            --function-name lex-hook \
-            --environment "Variables={API_BASE_URL=${{ secrets.API_BASE_URL }}}"
       - name: Set lex-hook environment variables
         run: |
           aws lambda update-function-configuration \
