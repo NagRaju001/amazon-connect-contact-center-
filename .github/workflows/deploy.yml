@@ -39,6 +39,16 @@ jobs:
           aws lambda update-function-code \
             --function-name lex-hook \
             --zip-file fileb://services/lambdas/lex-hook/function.zip
+      - name: Wait for lex-hook to be ready
+        run: |
+          aws lambda wait function-updated \
+            --function-name lex-hook
+
+      - name: Set lex-hook environment variables
+        run: |
+          aws lambda update-function-configuration \
+            --function-name lex-hook \
+            --environment "Variables={API_BASE_URL=${{ secrets.API_BASE_URL }}}"
       - name: Set lex-hook environment variables
         run: |
           aws lambda update-function-configuration \
