@@ -257,7 +257,7 @@ amazon-connect-contact-center/
 
 **Base URL:**
 ```
-https://i3kzrvrdq0.execute-api.us-east-1.amazonaws.com
+(https://<your-api-gateway-id>.execute-api.<your-region>.amazonaws.com)
 ```
 
 | Method | Endpoint | Description |
