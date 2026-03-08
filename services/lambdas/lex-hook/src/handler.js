@@ -124,7 +124,7 @@ async function handleCheckOrderStatus(event, slots, customerName) {
   } else if (rawOrderNumber.toUpperCase().startsWith("ORD")) {
     orderNumber = rawOrderNumber.toUpperCase();
   } else if (/^\d+$/.test(rawOrderNumber)) {
-    orderNumber = `ORD1${rawOrderNumber}`;
+    orderNumber = `${process.env.ORDER_PREFIX || "ORD1"}${rawOrderNumber}`;
   } else {
     orderNumber = rawOrderNumber.toUpperCase();
   }
@@ -187,7 +187,7 @@ async function handleReturnOrder(event, slots, customerName, customer) {
   } else if (rawOrderNumber.toUpperCase().startsWith("ORD")) {
     orderNumber = rawOrderNumber.toUpperCase();
   } else if (/^\d+$/.test(rawOrderNumber)) {
-    orderNumber = `ORD1${rawOrderNumber}`;
+    orderNumber = `${process.env.ORDER_PREFIX || "ORD1"}${rawOrderNumber}`;
   } else {
     orderNumber = rawOrderNumber.toUpperCase();
   }

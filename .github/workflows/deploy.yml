@@ -56,7 +56,7 @@ jobs:
         run: |
           aws lambda update-function-configuration \
             --function-name lex-hook \
-            --environment "Variables={API_BASE_URL=${{ secrets.API_BASE_URL }}}"
+            --environment "Variables={API_BASE_URL=${{ secrets.API_BASE_URL }},ORDER_PREFIX=ORD1}"
       - name: Deploy connect-greeting Lambda
         run: |
           aws lambda update-function-code \

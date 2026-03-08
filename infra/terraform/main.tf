@@ -74,8 +74,10 @@ resource "aws_lambda_function" "lex_hook" {
   timeout = 15
 
   environment {
-  variables = {
+    variables = {
     API_BASE_URL = var.api_base_url
+    ORDER_PREFIX  = "ORD1"
+
   }
 }
 }
