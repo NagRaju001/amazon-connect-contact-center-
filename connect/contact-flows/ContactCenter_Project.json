@@ -151,7 +151,7 @@
     },
     {
       "Parameters": {
-        "QueueId": "arn:aws:connect:us-east-1:YOUR_ACCOUNT_ID:instance/e6de9112-731e-4cdc-b098-a2c53ad88acf/queue/d4c83817-feb7-40b3-bd5f-04e7754cf901"
+        "QueueId": "arn:aws:connect:us-east-1:YOUR_ACCOUNT_ID:instance/YOUR_CONNECT_INSTANCE_ID/queue/YOUR_QUEUE_ID"
       },
       "Identifier": "c98fc381-da4f-4d90-bb27-d36a43a0cab3",
       "Type": "UpdateContactTargetQueue",
@@ -190,7 +190,7 @@
       "Parameters": {
         "Text": "Welcome $.External.customerName! to IT Solutions .\nHow can I help you today?\nYou can check your order status, make a return, or speak to an agent.\n",
         "LexV2Bot": {
-          "AliasArn": "arn:aws:lex:us-east-1:YOUR_ACCOUNT_ID:bot-alias/GYRMI028ZL/TSTALIASID"
+          "AliasArn": "arn:aws:lex:us-east-1:YOUR_ACCOUNT_ID:bot-alias/YOUR_LEX_BOT_ID/TSTALIASID"
         }
       },
       "Identifier": "61460f47-9048-4ab1-b72c-aef82c7d8dd6",
