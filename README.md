@@ -148,7 +148,6 @@ This design eliminates the need for server management while enabling horizontal 
 ---
 
 ## Repository Structure
-
 ```
 amazon-connect-contact-center/
 │
@@ -163,7 +162,7 @@ amazon-connect-contact-center/
 │
 ├── connect/
 │   └── contact-flows/
-│       └── ContactCenter_Project.json     # Amazon Connect flow export
+│       └── ContactCenter_Project.json     # Amazon Connect flow export (ARNs anonymized)
 │
 ├── lex/
 │   └── bot-definition/
@@ -182,25 +181,33 @@ amazon-connect-contact-center/
 │   ├── lambdas/
 │   │   ├── api-services/                  # Order and return APIs
 │   │   │   ├── src/                       # Source code
-│   │   │   ├── testcheck/                 # Test files
+│   │   │   ├── tests/                     # Unit tests
 │   │   │   ├── package.json
 │   │   │   └── package-lock.json
 │   │   │
-│   │   └── lex-hook/                      # Lex fulfillment logic
+│   │   ├── lex-hook/                      # Lex fulfillment logic
+│   │   │   ├── src/
+│   │   │   │   └── handler.js             # Main Lambda handler — reads Lex intent,
+│   │   │   │                              #   calls api-services via API Gateway,
+│   │   │   │                              #   returns response back to Lex/Connect
+│   │   │   ├── tests/                     # Unit tests
+│   │   │   ├── package.json
+│   │   │   └── package-lock.json
+│   │   │
+│   │   └── connect-greeting/              # ANI-based customer lookup for personalized greeting
 │   │       ├── src/
-│   │       │   └── handler.js             # Main Lambda handler — reads Lex intent,
-│   │       │                              #   calls api-services via API Gateway,
-│   │       │                              #   returns response back to Lex/Connect
+│   │       │   └── handler.js             # Queries DynamoDB by phone number, returns firstName
+│   │       ├── tests/                     # Unit tests
 │   │       ├── package.json
 │   │       └── package-lock.json
 │   │
 │   └── scripts/                           # Database seeding scripts
+│       └── seed.js
 │
 ├── Amazon_Connect_Architecture Diagram.png  # Architecture diagram
 ├── .gitignore
 └── README.md
 ```
-
 ---
 
 ## Call Flow
