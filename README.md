@@ -320,6 +320,13 @@ cd infra/terraform
 terraform init
 terraform apply
 ```
+> **Note:** The following resources require one-time manual setup via the AWS Console and are not provisioned by Terraform:
+> - **Amazon Connect** — instance creation, contact flow import, phone number assignment, and Lambda associations
+> - **Amazon Lex** — bot creation, intent configuration, building, and publishing
+> - **Amazon Contact Lens** — enabled via Connect instance settings
+> - **Amazon QuickSight** — dashboard and data source configuration
+>
+> Terraform provisions: IAM roles, Lambda functions, API Gateway, and supporting permissions.
 
 **Database Seeding:**
 ```bash
