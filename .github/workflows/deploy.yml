@@ -34,6 +34,21 @@ jobs:
           cd services/lambdas/connect-greeting
           npm install
           zip -r function.zip src/ node_modules/ package.json
+          
+      - name: Test api-services
+        run: |
+          cd services/lambdas/api-services
+          npm test
+
+      - name: Test lex-hook
+        run: |
+          cd services/lambdas/lex-hook
+          npm test
+
+      - name: Test connect-greeting
+        run: |
+          cd services/lambdas/connect-greeting
+          npm test
       - name: Deploy api-services Lambda
         run: |
           aws lambda update-function-code \
