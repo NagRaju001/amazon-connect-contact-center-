@@ -330,7 +330,9 @@ node seed.js
 
 **Application Deployment:**
 
-Push to `main` branch triggers the GitHub Actions pipeline. The pipeline installs dependencies, packages Lambda functions, and deploys directly to AWS Lambda.
+Push to `main` branch triggers the GitHub Actions pipeline. The pipeline installs dependencies, runs unit tests, packages all three Lambda functions (`api-orders-service`, `lex-hook`, `connect-greeting`), and deploys them directly to AWS Lambda.
+
+> **Note:** Amazon Connect instance configuration, Lex bot publishing, and API Gateway setup require one-time manual setup via the AWS Console. See the Deployment section for details.
 
 **Amazon Connect Configuration:**
 1. Create Connect instance in AWS Console
